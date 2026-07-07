@@ -244,32 +244,6 @@
                 </div>
             </div>
 
-            <!-- 移動速度 -->
-            <div class="upgrade-row">
-                <div>
-                    <span style="color:var(--neon-green);">移動速度: </span>
-                    <span id="ms-val">6</span>
-                </div>
-                <div class="stat-controls">
-                    <span style="color:#aaa;">[<span id="ms-pts">4</span> 點]</span>
-                    <button class="btn-adjust" id="btn-dec-ms">-</button>
-                    <button class="btn-adjust" id="btn-inc-ms">+</button>
-                </div>
-            </div>
-
-            <!-- 射擊速度 (子彈速度) -->
-            <div class="upgrade-row">
-                <div>
-                    <span style="color:var(--neon-blue);">射擊速1/速2: </span>
-                    <span id="ss-val">15 / 14</span>
-                </div>
-                <div class="stat-controls">
-                    <span style="color:#aaa;">[<span id="ss-pts">14</span> 點]</span>
-                    <button class="btn-adjust" id="btn-dec-ss">-</button>
-                    <button class="btn-adjust" id="btn-inc-ss">+</button>
-                </div>
-            </div>
-
             <!-- 金幣兌換點數 -->
             <div class="gold-exchange-box">
                 <span style="font-size:10px; color:var(--neon-yellow);">用金幣兌換 1 點屬性點</span>
@@ -439,19 +413,19 @@
         stats: {
             hp: 0,  // 分配在血量的點數
             w1: 0,  // 分配在武器1傷害的點數
-            w2: 0,  // 分配在武器2傷害的點數
-            ms: 4,  // 初始給 4 點，移動速度 = 2 + 4 = 6
-            ss: 14  // 初始給 14 點，速1 = 14 + 1 = 15, 速2 = 14
+            w2: 0   // 分配在武器2傷害的點數
         }
     };
 
-    // 計算配點後的新屬性公式
+    // 計算配點後的新屬性公式 (移除移動速度、射擊速度配點)
     const getPlayerMaxHP = () => 100 + (rpgData.stats.hp * 2);
     const getW1Dmg = () => 10 + rpgData.stats.w1;
     const getW2Dmg = () => 50 + (rpgData.stats.w2 * 5);
-    const getPlayerSpeed = () => 2 + rpgData.stats.ms;
-    const getBulletSpeed1 = () => rpgData.stats.ss + 1;
-    const getBulletSpeed2 = () => rpgData.stats.ss;
+    
+    // 固定速度數值，讓操作感最為精準流暢
+    const getPlayerSpeed = () => 6;
+    const getBulletSpeed1 = () => 15;
+    const getBulletSpeed2 = () => 8;
 
     const config = {
         weapons: [
@@ -535,25 +509,15 @@
         document.getElementById('w2-dmg-val').innerText = getW2Dmg();
         document.getElementById('w2-pts').innerText = rpgData.stats.w2;
 
-        document.getElementById('ms-val').innerText = getPlayerSpeed();
-        document.getElementById('ms-pts').innerText = rpgData.stats.ms;
-
-        document.getElementById('ss-val').innerText = `${getBulletSpeed1()} / ${getBulletSpeed2()}`;
-        document.getElementById('ss-pts').innerText = rpgData.stats.ss;
-
         // 配點調整按鈕啟用狀態
         const hasPoints = rpgData.statPoints > 0;
         document.getElementById('btn-inc-hp').disabled = !hasPoints;
         document.getElementById('btn-inc-w1').disabled = !hasPoints;
         document.getElementById('btn-inc-w2').disabled = !hasPoints;
-        document.getElementById('btn-inc-ms').disabled = !hasPoints;
-        document.getElementById('btn-inc-ss').disabled = !hasPoints;
 
         document.getElementById('btn-dec-hp').disabled = (rpgData.stats.hp <= 0);
         document.getElementById('btn-dec-w1').disabled = (rpgData.stats.w1 <= 0);
         document.getElementById('btn-dec-w2').disabled = (rpgData.stats.w2 <= 0);
-        document.getElementById('btn-dec-ms').disabled = (rpgData.stats.ms <= 0);
-        document.getElementById('btn-dec-ss').disabled = (rpgData.stats.ss <= 0);
 
         // 兌換點數按鈕
         document.getElementById('btn-buy-pt').disabled = (rpgData.gold < 10);
@@ -577,10 +541,6 @@
     document.getElementById('btn-dec-w1').onclick = () => modifyStat('w1', -1);
     document.getElementById('btn-inc-w2').onclick = () => modifyStat('w2', 1);
     document.getElementById('btn-dec-w2').onclick = () => modifyStat('w2', -1);
-    document.getElementById('btn-inc-ms').onclick = () => modifyStat('ms', 1);
-    document.getElementById('btn-dec-ms').onclick = () => modifyStat('ms', -1);
-    document.getElementById('btn-inc-ss').onclick = () => modifyStat('ss', 1);
-    document.getElementById('btn-dec-ss').onclick = () => modifyStat('ss', -1);
 
     // 金幣兌換 1 點屬性點 (10G)
     document.getElementById('btn-buy-pt').onclick = () => {
@@ -644,17 +604,17 @@
 
         let n = state.currentEnemyLvl;
         if (state.isBoss) {
-            // Boss 數值公式
+            // Boss 數值公式 (固定速度數值，移除動態速度縮放)
             state.enemyMaxHP = 450 + 50 * n;
             state.enemyParams.dmg = 10 + 10 * n;
-            state.enemyParams.speed = 2 * n;
+            state.enemyParams.speed = 3; // 固定 Boss 移動速度
             document.getElementById('enemy-name').innerText = `[BOSS] 核心體 Lv.${n}`;
             document.getElementById('enemy-name').style.color = 'var(--neon-purple)';
         } else {
-            // 小怪數值公式
+            // 小怪數值公式 (固定速度數值，移除動態速度縮放)
             state.enemyMaxHP = 80 + 20 * n;
             state.enemyParams.dmg = 5 + 5 * n;
-            state.enemyParams.speed = n;
+            state.enemyParams.speed = 1.5; // 固定小怪移動速度
             document.getElementById('enemy-name').innerText = `病毒實體 Lv.${n}`;
             document.getElementById('enemy-name').style.color = '#ff3366';
         }
@@ -804,32 +764,30 @@
         if (!state.isPlaying) return requestAnimationFrame(gameLoop);
         const now = Date.now();
 
-        // 1. 玩家移動 (套用新的速度屬性公式)
+        // 1. 玩家移動 (套用固定的速度數值 6)
         let playerSpeed = getPlayerSpeed();
         if (state.keys.left) state.player.x -= playerSpeed;
         if (state.keys.right) state.player.x += playerSpeed;
         state.player.x = Math.max(20, Math.min(canvas.width - 20, state.player.x));
 
-        // 2. 敵人移動 (平滑隨機移動)
+        // 2. 敵人移動 (平滑隨機移動 - 使用固定移動權重)
         if (state.enemyHP > 0) {
             if (Math.abs(state.enemy.x - state.enemy.targetX) < 10 && Math.abs(state.enemy.y - state.enemy.targetY) < 10) {
                 state.enemy.targetX = Math.random() * (canvas.width - 100) + 50;
                 state.enemy.targetY = Math.random() * 150 + 50;
             }
-            let moveFactor = 0.01 + (state.enemyParams.speed * 0.005);
-            if (moveFactor > 0.1) moveFactor = 0.1; 
+            let moveFactor = state.isBoss ? 0.03 : 0.02; // 固定怪物的隨機移動靈敏度
             state.enemy.x += (state.enemy.targetX - state.enemy.x) * moveFactor;
             state.enemy.y += (state.enemy.targetY - state.enemy.y) * moveFactor;
         }
 
-        // 3. 敵人開火
-        let shootInterval = Math.max(500, 1500 - (state.enemyParams.speed * 50));
-        if (now - state.enemy.lastShoot > shootInterval && state.enemyHP > 0) {
-            let dySpeed = 4 + (state.enemyParams.speed * 0.2); 
+        // 3. 敵人開火 (每秒發射 1 發子彈)
+        if (now - state.enemy.lastShoot > 1000 && state.enemyHP > 0) {
+            let dySpeed = 5; // 固定怪物普通子彈下墜速度
             state.bullets.push({ x: state.enemy.x, y: state.enemy.y + 20, w: 6, h: 20, dy: dySpeed, dmg: state.enemyParams.dmg, isEnemy: true, color: '#ff0055' });
             state.enemy.lastShoot = now;
         }
-        // Boss 的超級原子大彈幕
+        // Boss 的超級原子大彈幕 (每10秒一顆)
         if (state.isBoss && now - state.enemy.lastBomb > 10000 && state.enemyHP > 0) {
             state.bullets.push({ x: state.enemy.x, y: state.enemy.y + 30, w: 24, h: 24, dy: 3, dmg: state.enemyParams.dmg * 5, isEnemy: true, color: 'var(--neon-orange)' }); 
             state.enemy.lastBomb = now;
@@ -848,7 +806,7 @@
                     state.playerHP -= b.dmg;
                     showFloatingDamage(`-${b.dmg}`, state.player.x, state.player.y, 'dmg-player');
                     state.bullets.splice(i, 1);
-                    playExplosionSound(); // 玩家被子彈打中播放爆炸/受傷音效
+                    playExplosionSound(); // 玩家被子彈打中播放受傷音效
                     appContainer.classList.add('shake');
                     setTimeout(()=> appContainer.classList.remove('shake'), 200);
                     updateGameUI();
@@ -861,7 +819,7 @@
                     showFloatingDamage(`-${b.dmg}`, state.enemy.x, state.enemy.y, 'dmg-enemy');
                     createExplosion(b.x, b.y, 'var(--neon-blue)', 5);
                     state.bullets.splice(i, 1);
-                    playExplosionSound(); // 擊中怪物時播放小型爆炸音效
+                    playExplosionSound(); // 擊中怪物時播放爆炸音效
                     updateGameUI();
                     if (state.enemyHP <= 0) { handleEnemyDefeat(); break; }
                 }
